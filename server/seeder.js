@@ -76,7 +76,8 @@ const importData = async () => {
           category: category._id,
           categoryName: category.name,
           subcategory: subcategory._id,
-          subcategoryName: subcategory.name, // Add this line
+          subcategoryName: subcategory.name,
+          quantity: product.quantity || 1, // Add this line
         };
       })
       .filter(Boolean);
