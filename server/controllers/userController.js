@@ -8,20 +8,27 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-  generateToken(res, user._id);
 
-  if (user && (await user.matchPassword(password))) {
-    res.json({
-      _id: user._id,
-      name: user.username,
-      email: user.email,
-      isAdmin: user.isAdmin,
-    });
+  if (user) {
+    generateToken(res, user._id);
+
+    if (await user.matchPassword(password)) {
+      res.json({
+        _id: user._id,
+        name: user.username,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      });
+    } else {
+      res.status(401);
+      throw new Error("Invalid Email or Password!");
+    }
   } else {
     res.status(401);
-    throw new Error("Invalid username or password!");
+    throw new Error("User not found!");
   }
 });
+
 
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
