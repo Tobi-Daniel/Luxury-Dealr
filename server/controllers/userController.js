@@ -99,9 +99,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const resetToken = user.createPasswordResetToken();
   await user.save(); // await the save operation
 
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/users/reset-password/${resetToken}}`;
+  const resetUrl = `${req.protocol}://localhost:3000/reset-password/${resetToken}}`;
 
   const message = `Forgot Password? Click here to reset your password!: ${resetUrl}`;
 
@@ -113,9 +111,9 @@ const forgotPassword = asyncHandler(async (req, res) => {
     });
 
     res.status(200).json({
-      // use res instead of response
-      message: "Token sent to email",
+      message: "Yay! We've sent a token to your email!",
     });
+
   } catch (error) {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
