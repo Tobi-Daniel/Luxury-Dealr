@@ -38,17 +38,20 @@ router.get("/google", async (req, res) => {
 // register or login user to database
 router.get("/login/success", async (req, res) => {
   if (req.user) {
-    const userExists = await User.findOne({ email: req.user._json.email });
+    let userExists = await User.findOne({ email: req.user._json.email });
     if (userExists) {
       generateToken(res, userExists._id);
     } else {
       const newUser = new User({
-        username: req.user._json.username,
+        username: req.user._json.email.split("@")[0],
+        name: req.user.username,
         email: req.user._json.email,
         password: Date.now(), // dummy password
+        authMethod: "google", // set authMethod to 'google'
       });
       generateToken(res, newUser._id);
       await newUser.save();
+      userExists = newUser; // assign newUser to userExists
     }
     res.status(200).json({
       user: { ...req.user, isAdmin: userExists.isAdmin },
@@ -61,6 +64,10 @@ router.get("/login/success", async (req, res) => {
     });
   }
 });
+
+
+
+
 
 
 //login failed

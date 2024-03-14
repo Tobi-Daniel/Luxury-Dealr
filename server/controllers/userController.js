@@ -1,4 +1,5 @@
 import User from "../models/UserModel.js";
+import Bucket from "../models/BucketModel.js";
 import asyncHandler from "express-async-handler";
 import generateToken from "../utils/generateToken.js";
 import sendEmail from "../utils/sendEmail.js";
@@ -31,7 +32,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, authMethod } = req.body;
 
   const userExists = await User.findOne({ email });
 
@@ -40,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("User already exists!");
   }
 
-  const user = await User.create({ username, email, password });
+  const user = await User.create({ username, email, password, authMethod });
 
   if (user) {
     generateToken(res, user._id);
@@ -56,6 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid User Credentials!");
   }
 });
+
 
 const updateUserprofile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.body._id);
@@ -143,27 +145,59 @@ const resetPassword = asyncHandler(async (req, res) => {
     passwordResetExpires: { $gt: Date.now() },
   });
 
-  if (!user) { 
-    res.status(400).json({
+  if (!user) {
+    return res.status(400).json({
       status: "fail",
-      message: "Token is invalid or expired!"
-    })
+      message: "Token is invalid or expired!",
+    });
   }
 
-  user.password = req.body.password
-   user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined
-  user.save();
+  user.password = req.body.password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
 
-  generateToken(res, user._id)
+  try {
+    await user.save();
+    generateToken(res, user._id);
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "An error occurred while resetting the password.",
+    });
+  }
 
-   res.json({
-     _id: user._id,
-     name: user.username,
-     email: user.email,
-     isAdmin: user.isAdmin,
-   });
- 
+  res.json({
+    _id: user._id,
+    name: user.username,
+    email: user.email,
+    isAdmin: user.isAdmin,
+  });
+});
+
+
+// Get bucket items
+const getBucketItems = asyncHandler(async (req, res) => {
+  const bucketItems = await Bucket.find({ user: req.user._id });
+
+  res.json(bucketItems);
+});
+
+// Save bucket items
+const saveBucketItems = asyncHandler(async (req, res) => {
+  const { bucketItems } = req.body;
+
+  const updatedBucket = await Bucket.findOneAndUpdate(
+    { user: req.user._id },
+    { items: bucketItems },
+    { new: true, upsert: true }
+  );
+
+  if (updatedBucket) {
+    res.json(updatedBucket);
+  } else {
+    res.status(404);
+    throw new Error('Bucket not found');
+  }
 });
 
 export {
@@ -173,4 +207,6 @@ export {
   logoutUser,
   forgotPassword,
   resetPassword,
+  getBucketItems, // Add this line
+  saveBucketItems, // Add this line
 };

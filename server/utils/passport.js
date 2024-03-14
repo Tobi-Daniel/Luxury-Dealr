@@ -3,12 +3,11 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 const passportSetup = (app) => {
-  // Renamed here
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
       resave: false,
-      saveUninitialized: false, // Corrected here
+      saveUninitialized: false,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 1 day
       },
@@ -25,20 +24,20 @@ const passportSetup = (app) => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: "/auth/google/callback",
         scope: ["profile", "email"],
-      },
-      (accessToken, refreshToken, profile, callback) => {
-        callback(null, profile);
+      }, (acessToken, refreshToken, profile, callback) => {
+        callback(null, profile)
       }
-    )
-  );
+    ))
 
   passport.serializeUser((user, done) => {
+    
     done(null, user);
   });
 
   passport.deserializeUser((user, done) => {
+   
     done(null, user);
   });
 };
 
-export default passportSetup; // Renamed here
+export default passportSetup;

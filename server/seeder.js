@@ -9,6 +9,7 @@ import {
 import { Category, Subcategory, Product } from "./models/ProductsModel.js"; // Removed Item import
 import Order from "./models/OrderModel.js";
 import User from "./models/UserModel.js";
+import Bucket from "./models/BucketModel.js";
 import connectDB from "./config/db.js";
 
 dotenv.config();
@@ -24,6 +25,17 @@ const importData = async () => {
     await User.deleteMany();
 
     const createdUsers = await User.insertMany(users);
+
+    // Create some sample bucket data
+    const sampleBuckets = createdUsers.map((user) => ({
+      user: user._id,
+      items: [
+        // Add your bucket items here...
+      ],
+    }));
+
+    // Add the sample bucket data to the database
+    await Bucket.insertMany(sampleBuckets);
 
     const adminUser = createdUsers[2]._id;
 
@@ -84,7 +96,9 @@ const importData = async () => {
 
     await Product.insertMany(sampleProducts);
 
-    console.log("Added sample categories, subcategories, and products");
+    console.log(
+      "Added sample categories, subcategories, products, and buckets"
+    );
     process.exit();
   } catch (error) {
     console.error(`Error: ${error}`);

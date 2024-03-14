@@ -15,9 +15,16 @@ const UserSchema = new Schema({
     required: true,
     unique: true,
   },
-  password: {
+  authMethod: {
     type: String,
     required: true,
+    enum: ["local", "google"], // 'local' for username/password, 'google' for Google auth
+  },
+  password: {
+    type: String,
+    required: function () {
+      return this.authMethod === "local"; // Only require a password for local auth
+    },
   },
   isAdmin: {
     type: Boolean,
@@ -52,11 +59,14 @@ UserSchema.pre("save", async function (next) {
 UserSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
 
-  this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
 
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000 // 10mins
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10mins
 
-  return resetToken
+  return resetToken;
 };
 
 const User = mongoose.model("User", UserSchema);
