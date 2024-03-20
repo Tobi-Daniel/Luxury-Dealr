@@ -11,6 +11,7 @@ import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import cookieParser from "cookie-parser";
 import passport from "./utils/passport.js";
 import authRoutes from "./routes/authRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.get("/", (req, res) => {
 app.use("/api", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/auth", authRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

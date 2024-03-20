@@ -11,46 +11,29 @@ const ProductSchema = new Schema(
 
 const OrderSchema = new Schema(
   {
-    name: {
-      type: String,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
-    email: {
-      type: String,
-      required: true,
-    },
-    phone: {
-      type: String,
-      required: true,
-    },
-    deliveryAddress: {
-      address: {
-        type: String,
-        required: true,
+    orderItems: [
+      {
+        name: { type: String, required: true },
+        quantity: { type: Number, required: true },
+        image: { type: String, required: true },
+        price: { type: Number, required: true },
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: "Product",
+        },
       },
-      city: {
-        type: String,
-        required: true,
-      },
-      postalCode: {
-        type: String,
-        required: true,
-      },
-      country: {
-        type: String,
-        required: true,
-      },
-    },
-    otherInformation: String,
-    products: [ProductSchema],
-    meetingDetails: {
-      name: String,
-      email: String,
-      phone: String,
-      platform: String,
-      videoCallDateTime: Date,
-      deliveryDate: Date,
-      noMeeting: Boolean,
+    ],
+    shippingAddress: {
+      address: { type: String, required: true },
+      city: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      country: { type: String, required: true },
     },
     paymentMethod: {
       type: String,
@@ -63,11 +46,6 @@ const OrderSchema = new Schema(
       emailAddress: { type: String },
     },
     itemsPrice: {
-      type: Number,
-      required: true,
-      default: 0.0,
-    },
-    deliveryPrice: {
       type: Number,
       required: true,
       default: 0.0,
@@ -89,7 +67,9 @@ const OrderSchema = new Schema(
       type: Date,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const Order = mongoose.model("Order", OrderSchema);

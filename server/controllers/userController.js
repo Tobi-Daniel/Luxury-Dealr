@@ -1,5 +1,4 @@
 import User from "../models/UserModel.js";
-import Bucket from "../models/BucketModel.js";
 import asyncHandler from "express-async-handler";
 import generateToken from "../utils/generateToken.js";
 import sendEmail from "../utils/sendEmail.js";
@@ -10,23 +9,17 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  if (user) {
+  if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
-
-    if (await user.matchPassword(password)) {
-      res.json({
-        _id: user._id,
-        name: user.username,
-        email: user.email,
-        isAdmin: user.isAdmin,
-      });
-    } else {
-      res.status(401);
-      throw new Error("Invalid Email or Password!");
-    }
+    res.json({
+      _id: user._id,
+      name: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
   } else {
     res.status(401);
-    throw new Error("User not found!");
+    throw new Error(" Invalid email or password");
   }
 });
 
@@ -155,16 +148,9 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = req.body.password;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
+  user.save();
 
-  try {
-    await user.save();
-    generateToken(res, user._id);
-  } catch (error) {
-    return res.status(500).json({
-      status: "error",
-      message: "An error occurred while resetting the password.",
-    });
-  }
+  generateToken(res, user._id);
 
   res.json({
     _id: user._id,
@@ -175,30 +161,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 
-// Get bucket items
-const getBucketItems = asyncHandler(async (req, res) => {
-  const bucketItems = await Bucket.find({ user: req.user._id });
 
-  res.json(bucketItems);
-});
-
-// Save bucket items
-const saveBucketItems = asyncHandler(async (req, res) => {
-  const { bucketItems } = req.body;
-
-  const updatedBucket = await Bucket.findOneAndUpdate(
-    { user: req.user._id },
-    { items: bucketItems },
-    { new: true, upsert: true }
-  );
-
-  if (updatedBucket) {
-    res.json(updatedBucket);
-  } else {
-    res.status(404);
-    throw new Error('Bucket not found');
-  }
-});
 
 export {
   loginUser,
@@ -207,6 +170,4 @@ export {
   logoutUser,
   forgotPassword,
   resetPassword,
-  getBucketItems, // Add this line
-  saveBucketItems, // Add this line
 };

@@ -3,9 +3,9 @@ import passport from "passport";
 import axios from "axios"; // Corrected here
 import User from "../models/UserModel.js";
 import generateToken from "../utils/generateToken.js";
-import dotenv from "dotenv"; 
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 const router = express.Router();
 
@@ -65,11 +65,6 @@ router.get("/login/success", async (req, res) => {
   }
 });
 
-
-
-
-
-
 //login failed
 router.get("/login/failed", (req, res) => {
   res.status(401);
@@ -98,12 +93,5 @@ router.get("/logout", (req, res) => {
     });
   });
 });
-
-
-
-
-
-
-
 
 export default router;
